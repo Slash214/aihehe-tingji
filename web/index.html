@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>爱呵呵 · 听记</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="windowbar" id="windowbar"><div class="traffic"><button class="red" data-window="close" aria-label="关闭窗口">×</button><button class="yellow" data-window="minimize" aria-label="最小化">−</button><button class="green" data-window="maximize" aria-label="最大化">+</button></div><span>爱呵呵 · 听记</span><span class="window-edition">DESKTOP EDITION</span></div>
+<div class="resize-grip" id="resize-grip">◢</div>
+<aside>
+  <div class="logo"><div class="mark">听</div><span>爱呵呵 · 听记</span></div>
+  <button class="new" id="new-task">＋ 新建转写</button>
+  <div class="side-label">最近的文档</div>
+  <div class="history" id="history"><small>暂无文档</small></div>
+  <div class="side-bottom"><button id="open-settings">⚙ API 设置 <span class="kbd">Ctrl ,</span></button><small>爱呵呵开发 · v0.2.3</small></div>
+</aside>
+<main>
+  <div class="topbar"><span>工作台</span><div class="toolbar"><span id="health">正在检查</span><button class="secondary" id="top-settings">API 设置</button></div></div>
+  <div id="new-view">
+    <div class="hero"><h1>新建转写</h1><p>将音视频整理成文档。</p></div>
+    <div class="grid">
+      <section class="import-area">
+        <div class="sources">
+         <div class="source-slot"><div class="source-head"><span>视频</span><button id="remove-video" class="hidden" type="button">移除</button></div><label class="drop" id="drop" tabindex="0"><input id="file" type="file" accept="video/*,.mkv,.flv,.mp4,.mov,.webm" hidden><span class="file-icon"><svg width="30" height="30" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="3" y="6" width="26" height="20" rx="4"/><path d="m13 11 8 5-8 5z"/></svg></span><strong id="file-name">选择或拖入视频</strong><p id="file-info">MP4 / MOV / MKV 等</p></label></div>
+         <div class="source-slot"><div class="source-head"><span>音频</span><button id="remove-audio" class="hidden" type="button">移除</button></div><label class="drop" id="audio-drop" tabindex="0"><input id="audio-file" type="file" accept="audio/*,.mp3,.wav,.m4a,.aac,.flac,.ogg,.wma" hidden><span class="file-icon"><svg width="30" height="30" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 13v6m6-12v18m6-22v26m6-22v18m6-12v6"/></svg></span><strong id="audio-name">选择或拖入音频</strong><p id="audio-info">MP3 / WAV / M4A 等</p></label></div>
+        </div>
+        <p class="source-hint" id="source-hint">任选一个，也可同时选择；有独立音频时优先使用音频。总大小上限 2 GB。</p>
+        <div id="upload-error" class="error hidden" role="alert"></div>
+        <div class="action-row"><label class="option"><input type="checkbox" id="organize" checked><span>同时生成知识文档</span></label><button class="primary" id="start">开始转写</button></div>
+        <p class="micro" id="upload-hint">内容由所选 API 处理，文档保存在本地。</p>
+      </section>
+    </div>
+  </div>
+  <div id="result-view" class="hidden">
+    <div class="result-heading"><div><h1 id="result-title"></h1><p id="result-source"></p></div><div class="toolbar"><button id="add-audio" class="secondary hidden">返回首页补充音频</button><button id="retry" class="secondary hidden">继续处理 / 补充整理</button></div></div>
+    <section class="card progress-card"><div class="progress-head"><strong id="stage"></strong><span id="percent"></span></div><div class="bar"><div class="fill" id="fill"></div></div><span class="muted">文档自动保存在本地。退出软件将中断当前任务，已完成的部分可以继续。</span><div id="job-error" class="error hidden" role="alert"></div></section>
+    <section class="card">
+      <div class="card-title"><h2>文档预览</h2><div class="toolbar"><select id="export-kind" aria-label="导出格式" class="secondary"><option value="transcript.md">完整转写 · Markdown</option><option value="transcript.txt">完整转写 · TXT</option><option value="knowledge.md">知识文档 · Markdown</option><option value="segments.json">时间分段 · JSON</option></select><button id="download" class="primary">导出文档 ↓</button></div></div>
+      <div class="tabs"><button data-tab="transcript" class="selected">完整转写稿</button><button data-tab="knowledge">AI 知识文档</button></div>
+      <pre class="document" id="document"></pre>
+    </section>
+  </div>
+  <div class="footer"><button id="output-path" title="查看本地文档">打开文档文件夹 ↗</button></div>
+</main>
+<dialog id="settings">
+ <form class="dialog-inner" id="settings-form">
+  <div class="dialog-head"><h2>API 设置</h2><button type="button" class="close" id="close-settings" aria-label="关闭">×</button></div>
+  <div class="settings-tabs" role="tablist"><button type="button" id="asr-tab" role="tab" aria-selected="true" aria-controls="asr-panel" data-settings-tab="asr" class="selected">语音识别</button><button type="button" id="text-tab" role="tab" aria-selected="false" aria-controls="text-panel" data-settings-tab="text">文档整理</button></div>
+  <section id="asr-panel" role="tabpanel" aria-labelledby="asr-tab">
+   <label class="field">接口地址<input id="asr_base" placeholder="https://api.openai.com/v1" type="url"><small>使用服务商提供的 OpenAI 兼容地址。</small></label>
+   <label class="field" for="asr_key">API Key</label><div class="key-row"><input id="asr_key" type="password" autocomplete="off" placeholder="粘贴 Key 后获取模型"><button id="asr-fetch" class="secondary" type="button">获取模型</button></div>
+   <p class="model-status" id="asr-status" role="status">填写 Key 后自动获取，也可手动填写模型。</p>
+   <label class="field">语音模型<input id="asr-search" type="search" class="hidden" placeholder="搜索模型" aria-label="搜索语音模型"><select id="asr-select" aria-label="选择语音模型"></select></label>
+   <label class="field hidden" id="asr-manual">模型 ID<input id="asr_model" placeholder="填写语音模型 ID"></label>
+   <p class="model-note">模型列表不代表支持音频转写，请选择服务商支持的语音模型。</p>
+   <label class="field">语音接口类型<select id="asr_protocol"><option value="auto">自动匹配（推荐）</option><option value="openai">通用音频转写 / Whisper 兼容</option><option value="dashscope">阿里云 Qwen-Audio / Fun-ASR Flash</option><option value="qwen_chat">千问 Qwen3-ASR 音频消息</option></select></label>
+   <p class="model-note" id="asr-protocol-hint" role="status">选择模型后自动匹配调用方式。</p>
+   <div class="connection-test"><button type="button" class="secondary" id="asr-test">测试连接</button><span>用内置短音频实际调用，可能产生少量费用。</span></div>
+   <p class="connection-status" id="asr-test-status" role="status">尚未测试所选模型。</p>
+   <details class="advanced"><summary>更多选项</summary><label class="field">语言<select id="language"><option value="">自动识别</option><option value="zh">中文</option><option value="en">英文</option><option value="ja">日文</option><option value="ko">韩文</option></select></label><label class="option"><input id="verbose" type="checkbox"><span>逐句时间戳<small>需模型支持 verbose_json。</small></span></label></details>
+  </section>
+  <section id="text-panel" role="tabpanel" aria-labelledby="text-tab" class="hidden">
+   <button class="text-button" type="button" id="copy-config">复用语音接口与 Key</button>
+   <label class="field">接口地址<input id="text_base" placeholder="https://你的服务商/v1" type="url"><small>可与语音识别使用不同服务商。</small></label>
+   <label class="field" for="text_key">API Key</label><div class="key-row"><input id="text_key" type="password" autocomplete="off" placeholder="粘贴 Key 后获取模型"><button id="text-fetch" class="secondary" type="button">获取模型</button></div>
+   <p class="model-status" id="text-status" role="status">填写 Key 后自动获取，也可手动填写模型。</p>
+   <label class="field">文本模型<input id="text-search" type="search" class="hidden" placeholder="搜索模型" aria-label="搜索文本模型"><select id="text-select" aria-label="选择文本模型"></select></label>
+   <label class="field hidden" id="text-manual">模型 ID<input id="text_model" placeholder="填写文本模型 ID"></label>
+   <p class="model-note">请选择支持文本对话的模型。</p>
+   <div class="connection-test"><button type="button" class="secondary" id="text-test">测试连接</button><span>发送短消息实际调用，可能产生少量费用。</span></div>
+   <p class="connection-status" id="text-test-status" role="status">尚未测试所选模型。</p>
+  </section>
+  <div class="settings-foot"><span class="muted">Key 仅在本次使用中保留。</span><button class="primary" type="submit">完成</button></div>
+ </form>
+</dialog>
+<div class="toast hidden" id="toast" role="status"></div>
+<script>
+const token="__APP_TOKEN__";
+const $=id=>document.getElementById(id);
+if(window.AIHEHE_DESKTOP){document.body.classList.add("desktop");}
+const nativeAction=action=>{if(window.ipc)window.ipc.postMessage(action);};
+document.querySelectorAll("[data-window]").forEach(b=>b.onclick=()=>nativeAction(b.dataset.window));
+$("windowbar").onmousedown=e=>{if(e.button===0&&!e.target.closest("button"))nativeAction("drag");};
+$("windowbar").ondblclick=e=>{if(!e.target.closest("button"))nativeAction("maximize");};
+$("resize-grip").onmousedown=e=>{if(e.button===0)nativeAction("resize");};
+$("output-path").onclick=()=>{if(window.AIHEHE_DESKTOP)nativeAction("open-data");else toast($("output-path").title);};
+document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key==="o"){e.preventDefault();$("file").click();}if(e.ctrlKey&&e.key===","){e.preventDefault();settings();}});
+const fields=["asr_protocol","asr_base","asr_model","asr_key","text_base","text_model","text_key","language","verbose"];
+let current=null,selectedFile=null,selectedAudio=null,tab="transcript",uploading=false,timer=null,toastTimer=null;
+const defaults={asr_protocol:"auto",asr_base:"https://api.openai.com/v1",asr_model:"",text_base:"https://api.openai.com/v1",text_model:"",language:"",verbose:false};
+let remembered={};try{remembered=JSON.parse(localStorage.getItem("aihehe-settings")||"{}")}catch{}
+for(const name of fields){if(name.endsWith("_key"))continue;const value=remembered[name]??defaults[name];if(name==="verbose")$(name).checked=!!value;else $(name).value=value||"";}
+function config(){const c={organize:$("organize").checked};for(const n of fields)c[n]=n==="verbose"?$(n).checked:$(n).value.trim();return c;}
+function toast(message){$("toast").textContent=message;$("toast").classList.remove("hidden");clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("toast").classList.add("hidden"),4500);}
+async function api(path,options={}){const response=await fetch(path,{...options,headers:{"x-app-token":token,...options.headers}});if(!response.ok){let message="请求失败（"+response.status+"）";try{message=(await response.json()).error||message}catch{}if(response.status===403)message="会话已失效，请刷新页面后重新填写密钥。";throw Error(message)}return response;}
+function errorAt(id,error){$(id).textContent=error?error.message||error:"";$(id).classList.toggle("hidden",!error);}
+function settings(){ $("settings").showModal(); }
+$("open-settings").onclick=settings;$("top-settings").onclick=settings;$("close-settings").onclick=()=>$("settings").close();
+$("settings-form").onsubmit=e=>{e.preventDefault();const c=config();delete c.asr_key;delete c.text_key;delete c.organize;try{localStorage.setItem("aihehe-settings",JSON.stringify(c))}catch{}$("settings").close();toast("设置已应用，密钥仅保留在本次页面中");};
+function renderSources(){
+ $("file-name").textContent=selectedFile?.name||"选择或拖入视频";
+ $("file-info").textContent=selectedFile?(selectedFile.size/1024/1024).toFixed(1)+" MB":"MP4 / MOV / MKV 等";
+ $("audio-name").textContent=selectedAudio?.name||"选择或拖入音频";
+ $("audio-info").textContent=selectedAudio?(selectedAudio.size/1024/1024).toFixed(1)+" MB":"MP3 / WAV / M4A 等";
+ $("remove-video").classList.toggle("hidden",!selectedFile);$("remove-audio").classList.toggle("hidden",!selectedAudio);
+ $("source-hint").textContent=selectedFile&&selectedAudio?"将使用独立音频转写，时间位置以音频为准。":selectedFile?"将提取视频中的声音；没有音轨时请补充独立音频。":selectedAudio?"将使用所选音频转写。":"任选一个，也可同时选择；有独立音频时优先使用音频。总大小上限 2 GB。";
+}
+function choose(file,kind){
+ if(!file)return;
+ const other=kind==="audio"?selectedFile:selectedAudio;
+ if(file.size+(other?.size||0)>2*1024*1024*1024-65536){errorAt("upload-error","视频与音频总大小不能超过 2 GB");return;}
+ if(kind==="audio")selectedAudio=file;else selectedFile=file;
+ renderSources();errorAt("upload-error",null);
+}
+for(const [drop,input,kind] of [["drop","file","video"],["audio-drop","audio-file","audio"]]){
+ $(input).onchange=e=>choose(e.target.files[0],kind);
+ $(drop).onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$(input).click();}};
+ for(const ev of ["dragenter","dragover"])$(drop).addEventListener(ev,e=>{e.preventDefault();$(drop).classList.add("over");});
+ for(const ev of ["dragleave","drop"])$(drop).addEventListener(ev,e=>{e.preventDefault();$(drop).classList.remove("over");});
+ $(drop).addEventListener("drop",e=>choose(e.dataTransfer.files[0],kind));
+}
+$("remove-video").onclick=()=>{selectedFile=null;$("file").value="";renderSources();};
+$("remove-audio").onclick=()=>{selectedAudio=null;$("audio-file").value="";renderSources();};
+function validate(c){if(window.asrProfileError)throw Error(window.asrProfileError);if(!c.asr_key||!c.asr_model||!c.asr_base)throw Error("请在 API 设置中填写语音识别地址、模型和密钥。");if(c.organize&&(!c.text_key||!c.text_model||!c.text_base))throw Error("请填写文档整理接口，或取消「同时生成知识文档」。");}
+async function refreshHistory(){const jobs=await(await api("/api/jobs")).json();$("history").replaceChildren();for(const j of jobs){const button=document.createElement("button");button.classList.toggle("active",current?.id===j.id);const strong=document.createElement("strong");strong.textContent=j.title;const small=document.createElement("small");small.textContent=({running:"处理中",done:"已完成",failed:"待继续"}[j.status]||j.status)+" · "+new Date(j.created*1000).toLocaleDateString("zh-CN");button.append(strong,small);button.onclick=()=>showJob(j.id);$("history").append(button)}if(!jobs.length)$("history").textContent="暂无文档";}
+function renderDocument(){const scroll=$("document").scrollTop;let text="";if(tab==="knowledge")text=current.knowledge||"知识文档尚未生成。任务完成后，可以配置文本 API 并点击「继续处理 / 补充整理」。";else text=current.segments.map(s=>"["+formatTime(s.start)+" — "+formatTime(s.end)+"]"+(s.precision==="chunk"?" · 音频段范围":"")+"\n"+s.text).join("\n\n")||"转写完成的内容会自动出现在这里。";$("document").textContent=text;$("document").scrollTop=scroll;}
+function formatTime(n){const s=Math.floor(n);return [Math.floor(s/3600),Math.floor(s/60)%60,s%60].map(n=>String(n).padStart(2,"0")).join(":");}
+function renderJob(){if(!current)return;$("new-view").classList.add("hidden");$("result-view").classList.remove("hidden");$("result-title").textContent=current.title;$("result-source").textContent="来源："+current.source;$("stage").textContent=current.stage;$("percent").textContent=current.progress+"%";$("fill").style.width=current.progress+"%";const missingAudio=current.status==="failed"&&(current.error||"").includes("没有音轨");$("add-audio").classList.toggle("hidden",!missingAudio);$("retry").classList.toggle("hidden",current.status==="running"||missingAudio);errorAt("job-error",current.error);renderDocument();}
+async function showJob(id){clearTimeout(timer);try{current=await(await api("/api/jobs/"+id)).json();renderJob();await refreshHistory();if(current.status==="running")timer=setTimeout(()=>showJob(id),1800);}catch(e){toast(e.message);timer=setTimeout(()=>showJob(id),5000);}}
+$("new-task").onclick=()=>{clearTimeout(timer);current=null;$("new-view").classList.remove("hidden");$("result-view").classList.add("hidden");refreshHistory().catch(e=>toast(e.message));};
+$("add-audio").onclick=()=>{$("new-task").click();toast(selectedFile?"请选择对应的独立音频，再开始转写。":"请选择独立音频；也可重新添加原视频。");$("audio-drop").focus();};
+document.querySelectorAll("[data-tab]").forEach(button=>button.onclick=()=>{tab=button.dataset.tab;document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("selected",b===button));renderDocument();});
+$("start").onclick=async()=>{if(uploading)return;errorAt("upload-error",null);try{if(!selectedFile&&!selectedAudio)throw Error("请先选择一个视频或音频文件。");const c=config();c.input_kind=selectedAudio?"audio":"video";validate(c);uploading=true;$("start").disabled=true;$("start").textContent="正在导入文件…";const data=new FormData();data.append("config",JSON.stringify(c));data.append("file",selectedAudio||selectedFile);if(selectedAudio&&selectedFile)data.append("video",selectedFile);const result=await new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open("POST","/api/jobs");xhr.setRequestHeader("x-app-token",token);xhr.upload.onprogress=e=>{if(e.lengthComputable)$("start").textContent="正在导入文件 "+Math.round(e.loaded/e.total*100)+"%";};xhr.onerror=()=>reject(Error("本地服务连接中断，请检查程序是否仍在运行。"));xhr.onload=()=>{try{const r=JSON.parse(xhr.responseText);if(xhr.status>=200&&xhr.status<300)resolve(r);else reject(Error(r.error||"上传失败"))}catch{reject(Error("上传失败，请检查文件大小和本地服务。"))}};xhr.send(data);});await showJob(result.id);}catch(e){errorAt("upload-error",e);}finally{uploading=false;$("start").disabled=false;$("start").textContent="开始转写";}};
+$("retry").onclick=async()=>{try{const c=config();validate(c);$("retry").disabled=true;await api("/api/jobs/"+current.id+"/retry",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(c)});await showJob(current.id);}catch(e){toast(e.message)}finally{$("retry").disabled=false}};
+$("download").onclick=async()=>{if(!current)return;try{const kind=$("export-kind").value;const response=await api("/api/jobs/"+current.id+"/download/"+kind);const url=URL.createObjectURL(await response.blob());const a=document.createElement("a");a.href=url;a.download=current.title.replace(/[<>:"/\\|?*]/g,"_")+"-"+kind;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}catch(e){toast(e.message)}};
+async function init(){try{const h=await(await api("/api/health")).json();$("health").textContent=h.ffmpeg&&h.ffprobe?"● 引擎已就绪":"FFmpeg 未就绪";$("output-path").textContent="打开文档文件夹 ↗";$("output-path").title="保存位置："+h.output;if(!h.ffmpeg||!h.ffprobe)errorAt("upload-error","未找到 FFmpeg / ffprobe，请检查程序旁的 tools 文件夹。");await refreshHistory();}catch(e){$("health").textContent="引擎未连接";errorAt("upload-error",e)}}
+init();
+</script>
+<script src="/models.js"></script>
+</body>
+</html>
