@@ -8,6 +8,8 @@
 
 当前版本：**0.2.3** · 平台：**Windows** · 界面语言：**中文**
 
+**下载桌面版：[Windows x64 便携包](https://github.com/Slash214/aihehe-tingji/releases/download/v0.2.3/aihehe-tingji-v0.2.3-windows-x64.zip) · [版本说明与校验文件](https://github.com/Slash214/aihehe-tingji/releases/latest)**
+
 ## 能做什么
 
 - 导入一个视频、一个音频，或「视频 + 独立音频」。

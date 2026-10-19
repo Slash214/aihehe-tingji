@@ -8,6 +8,8 @@ A Windows desktop application developed by **爱呵呵 (AIhehe)** and built with
 
 Current version: **0.2.3** · Platform: **Windows** · Application UI: **Chinese**
 
+**Download: [Windows x64 portable package](https://github.com/Slash214/aihehe-tingji/releases/download/v0.2.3/aihehe-tingji-v0.2.3-windows-x64.zip) · [Release notes and checksums](https://github.com/Slash214/aihehe-tingji/releases/latest)**
+
 ## Features
 
 - Import one video, one audio file, or a video with a separate audio file.
